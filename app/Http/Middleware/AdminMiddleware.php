@@ -5,11 +5,15 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 
-class SuperAdminMiddleware
+class AdminMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
+        if (!auth()->check()) {
+            abort(403);
+        }
+
+        if (!auth()->user()->isAdmin() && !auth()->user()->isSuperAdmin()) {
             abort(403);
         }
 

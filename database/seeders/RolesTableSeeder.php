@@ -7,10 +7,10 @@ use App\Models\Role;
 
 class RolesTableSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        Role::updateOrCreate(['id' => 1], ['name' => 'superadmin']);
-        Role::updateOrCreate(['id' => 2], ['name' => 'user']);
-        Role::updateOrCreate(['id' => 3], ['name' => 'admin']);
+        Role::firstOrCreate(['id' => 1], ['name' => 'superadmin']);
+        Role::firstOrCreate(['id' => 2], ['name' => 'user']);
+        Role::firstOrCreate(['id' => 3], ['name' => 'admin']);
     }
 }

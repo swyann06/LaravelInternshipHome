@@ -16,21 +16,23 @@ class EditAvatarController extends Controller
     }
 
     public function update(UpdateAvatarRequest $request)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+    if ($user->avatar && !str_contains($user->avatar, 'defaults')) {
+        if (Storage::disk('public')->exists($user->avatar)) {
             Storage::disk('public')->delete($user->avatar);
         }
-
-        $path = $request->file('avatar')->store('avatars', 'public');
-
-        $user->update([
-            'avatar' => $path
-        ]);
-
-        return redirect()
-            ->route('avatar.edit')
-            ->with('success', 'Avatar updated!');
     }
+
+    $path = $request->file('avatar')->store('avatars', 'public');
+
+    $user->update([
+        'avatar' => $path
+    ]);
+
+    return redirect()
+        ->route('avatar.edit')
+        ->with('success', 'Avatar updated!');
+}
 }

@@ -7,29 +7,20 @@ use App\Models\User;
 
 class PostPolicy
 {
-    public function update(User $user, Post $post)
+    private function canManage(User $user, Post $post): bool
     {
-        if ($user->id === $post->user_id) {
-            return true;
-        }
-
-        if ($user->isAdmin() || $user->isSuperAdmin()) {
-            return true;
-        }
-
-        return false;
+        return $user->id === $post->user_id
+            || $user->isAdmin()
+            || $user->isSuperAdmin();
     }
 
-    public function delete(User $user, Post $post)
+    public function update(User $user, Post $post): bool
     {
-        if ($user->id === $post->user_id) {
-            return true;
-        }
+        return $this->canManage($user, $post);
+    }
 
-        if ($user->isAdmin() || $user->isSuperAdmin()) {
-            return true;
-        }
-
-        return false;
+    public function delete(User $user, Post $post): bool
+    {
+        return $this->canManage($user, $post);
     }
 }

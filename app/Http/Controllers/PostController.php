@@ -20,8 +20,10 @@ class PostController extends Controller
     }
 
     public function store(StorePostRequest $request)
-    {
-    $post = auth()->user()->posts()->create([]);
+{
+    $post = auth()->user()->posts()->create([
+        'content' => $request->input('content') ?? null,
+    ]);
 
     if ($request->hasFile('images')) {
         foreach (array_slice($request->file('images'), 0, 10) as $file) {
@@ -32,7 +34,7 @@ class PostController extends Controller
     }
 
     return redirect()->back()->with('success', 'Post created successfully!');
-    }
+}
 
     public function edit(Post $post)
     {
@@ -41,19 +43,25 @@ class PostController extends Controller
     }
 
     public function update(StorePostRequest $request, Post $post)
-    {
-        $this->authorize('update', $post);
+{
+    $this->authorize('update', $post);
 
-        if ($request->hasFile('images')) {
-            foreach ($request->file('images') as $file) {
-                $post->images()->create([
-                    'url' => $file->store('posts', 'public'),
-                ]);
-            }
+    if ($request->hasFile('images')) {
+
+        foreach ($post->images as $image) {
+            Storage::disk('public')->delete($image->url);
+            $image->delete();
         }
 
-        return redirect()->route('posts.index')->with('success', 'Updated successfully');
+        foreach ($request->file('images') as $file) {
+            $post->images()->create([
+                'url' => $file->store('posts', 'public'),
+            ]);
+        }
     }
+
+    return redirect()->route('posts.index')->with('success', 'Updated successfully');
+}
 
     public function destroy(Post $post)
     {

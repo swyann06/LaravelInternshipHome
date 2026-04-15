@@ -16,48 +16,42 @@ class AuthController extends Controller
     }
 
     public function register(RegisterRequest $request)
-{
-    $data = $request->validated();
+    {
+        $data = $request->validated();
 
-    $roleId = Role::where('name', 'user')->value('id') ?? 2;
+        $role = Role::where('name', 'user')->firstOrFail();
 
-    try {
-        $user = User::create([
+        User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'gender' => $data['gender'],
             'avatar' => $this->getDefaultAvatar($data['gender']),
-            'role_id' => $roleId,
+            'role_id' => $role->id,
             'status' => true,
         ]);
-    } catch (\Exception $e) {
-        return back()->with('error', 'Failed to register: ' . $e->getMessage());
-    }
 
-    return redirect()
-        ->route('register.form')
-        ->with('success', 'Registration successful!');
-}
+        return redirect()
+            ->route('register.form')
+            ->with('success', 'Registration successful!');
+    }
 
     private function getDefaultAvatar(string $gender): string
     {
         return $gender === 'male'
-            ? 'storage/avatar/male.jpg'
-            : 'storage/avatar/female.jpg';
+            ? 'avatars/defaults/male.jpg'
+            : 'avatars/defaults/female.jpg';
     }
 
     public function index()
     {
-        $this->authorizeSuperAdmin();
-
         $search = request()->query('search');
         $roleFilter = request()->query('role');
 
         $query = User::with('role');
 
         if ($search) {
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('email', 'like', "%{$search}%");
             });
@@ -75,8 +69,6 @@ class AuthController extends Controller
 
     public function updateRole(UpdateUserRoleRequest $request, User $user)
     {
-        $this->authorizeSuperAdmin();
-
         $newRole = Role::findOrFail($request->role_id);
 
         if ($newRole->name === 'superadmin') {
@@ -100,8 +92,6 @@ class AuthController extends Controller
 
     public function blockUser(User $user)
     {
-        $this->authorizeAdminOrSuperAdmin($user);
-
         if ($user->isSuperAdmin()) {
             return back()->with('error', 'Cannot block superadmin.');
         }
@@ -113,29 +103,8 @@ class AuthController extends Controller
 
     public function unblockUser(User $user)
     {
-        $this->authorizeAdminOrSuperAdmin($user);
-
         $user->update(['status' => true]);
 
         return back()->with('success', 'User unblocked successfully.');
-    }
-
-    private function authorizeSuperAdmin()
-    {
-        if (!auth()->check() || !auth()->user()->isSuperAdmin()) {
-            abort(403);
-        }
-    }
-
-    private function authorizeAdminOrSuperAdmin(User $target)
-    {
-        $current = auth()->user();
-        if (!$current->isAdmin() && !$current->isSuperAdmin()) {
-            abort(403);
-        }
-
-        if ($target->isSuperAdmin() && !$current->isSuperAdmin()) {
-            abort(403);
-        }
     }
 }

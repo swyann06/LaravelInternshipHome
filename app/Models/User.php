@@ -20,7 +20,7 @@ class User extends Authenticatable
 
     public function role()
     {
-        return $this->belongsTo(Role::class);
+    return $this->belongsTo(Role::class);
     }
 
     public function posts()
@@ -28,19 +28,19 @@ class User extends Authenticatable
     return $this->hasMany(Post::class);
 }
 
-    public function isSuperAdmin()
+    public function isSuperAdmin(): bool
 {
-    return $this->role_id === 1;
+    return $this->role?->name === 'superadmin';
 }
 
-public function isAdmin()
+public function isAdmin(): bool
 {
-    return $this->role_id === 3;
+    return $this->role?->name === 'admin';
 }
 
-public function isUser()
+public function isUser(): bool
 {
-    return $this->role_id === 2;
+    return $this->role?->name === 'user';
 }
 
 public function isBlocked(): bool

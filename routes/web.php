@@ -17,17 +17,21 @@ use App\Http\Controllers\PostController;
 */
 
     Route::get('/', function () {
-        return view('welcome');
-    });
-    
-    Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
-    Route::post('/register', [AuthController::class, 'register'])->name('register');
-    
-    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [LoginController::class, 'login']);
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-    
-    Route::middleware(['auth'])->group(function () {
+    return view('welcome');
+});
+
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register.form');
+Route::post('/register', [AuthController::class, 'register'])->name('register');
+
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+
+// ==========================
+// AUTHENTICATED USERS ONLY
+// ==========================
+Route::middleware(['auth'])->group(function () {
 
     Route::get('/home', function () {
         return view('home', ['user' => Auth::user()]);
@@ -48,9 +52,30 @@ use App\Http\Controllers\PostController;
     Route::put('/posts/{post}', [PostController::class, 'update'])->name('posts.update');
     Route::delete('/posts/{post}', [PostController::class, 'destroy'])->name('posts.destroy');
     Route::delete('/posts/images/{image}', [PostController::class, 'destroyImage'])->name('posts.image.destroy');
+});
 
-    Route::get('/admin/users', [AuthController::class, 'index'])->name('admin.users');
-    Route::post('/admin/users/{user}/role', [AuthController::class, 'updateRole'])->name('admin.users.role');
-    Route::patch('/admin/users/{user}/block', [AuthController::class, 'blockUser'])->name('admin.users.block');
-    Route::patch('/admin/users/{user}/unblock', [AuthController::class, 'unblockUser'])->name('admin.users.unblock');
+
+// ==========================
+// ADMIN ONLY
+// ==========================
+Route::middleware(['auth', 'admin'])->group(function () {
+
+    Route::patch('/admin/users/{user}/block', [AuthController::class, 'blockUser'])
+        ->name('admin.users.block');
+
+    Route::patch('/admin/users/{user}/unblock', [AuthController::class, 'unblockUser'])
+        ->name('admin.users.unblock');
+});
+
+
+// ==========================
+// SUPERADMIN ONLY
+// ==========================
+Route::middleware(['auth', 'superadmin'])->group(function () {
+
+    Route::get('/admin/users', [AuthController::class, 'index'])
+        ->name('admin.users');
+
+    Route::post('/admin/users/{user}/role', [AuthController::class, 'updateRole'])
+        ->name('admin.users.role');
 });
