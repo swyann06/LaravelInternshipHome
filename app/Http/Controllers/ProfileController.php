@@ -20,4 +20,12 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.edit')->with('success', 'Profile updated!');
     }
+
+    public function show()
+    {
+        return response()->json([
+            'success' => true,
+            'data' => auth()->user()->load('role'),
+        ]);
+    }
 }

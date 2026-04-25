@@ -91,4 +91,12 @@ class PostController extends Controller
 
         return back()->with('success', 'Image deleted successfully');
     }
+
+    public function show(Post $post)
+    {
+    return response()->json([
+        'success' => true,
+        'data' => $post->load('images', 'user'),
+        ]);
+    }
 }

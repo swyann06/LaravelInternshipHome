@@ -17,32 +17,41 @@ class AuthController extends Controller
     }
 
     public function register(RegisterRequest $request)
-    {
-        $data = $request->validated();
+{
+    $data = $request->validated();
 
-        $role = Role::where('name', 'user')->firstOrFail();
+    $role = Role::where('name', 'user')->firstOrFail();
 
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'gender' => $data['gender'],
-            'avatar' => $this->getDefaultAvatar($data['gender'], $data['name']),
-            'role_id' => $role->id,
-            'status' => true,
-        ]);
+    $user = User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'gender' => $data['gender'],
+        'avatar' => $this->getDefaultAvatar($data['gender'], $data['name']),
+        'role_id' => $role->id,
+        'status' => true,
+    ]);
 
-        // Auto-login after registration
-        Auth::login($user);
+    Auth::login($user);
+    
+    $token = $user->createToken('api-token')->plainTextToken;
 
-        return redirect()
-            ->route('home')
-            ->with('success', 'Registration successful! Welcome!');
+    if ($request->wantsJson()) {
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'token' => $token,
+            'redirect' => '/home'
+        ], 201);
     }
+
+    return redirect()
+        ->route('home')
+        ->with('success', 'Registration successful! Welcome!');
+}
 
     private function getDefaultAvatar(string $gender, string $name): string
     {
-        // Using UI Avatars as placeholder (no need for local files)
         $backgroundColor = $gender === 'male' ? '0D8F81' : 'f39c12';
         return 'https://ui-avatars.com/api/?background=' . $backgroundColor . '&color=fff&name=' . urlencode($name);
     }
