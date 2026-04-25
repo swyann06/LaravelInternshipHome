@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\UpdateUserRoleRequest;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -21,26 +22,29 @@ class AuthController extends Controller
 
         $role = Role::where('name', 'user')->firstOrFail();
 
-        User::create([
+        $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'gender' => $data['gender'],
-            'avatar' => $this->getDefaultAvatar($data['gender']),
+            'avatar' => $this->getDefaultAvatar($data['gender'], $data['name']),
             'role_id' => $role->id,
             'status' => true,
         ]);
 
+        // Auto-login after registration
+        Auth::login($user);
+
         return redirect()
-            ->route('register.form')
-            ->with('success', 'Registration successful!');
+            ->route('home')
+            ->with('success', 'Registration successful! Welcome!');
     }
 
-    private function getDefaultAvatar(string $gender): string
+    private function getDefaultAvatar(string $gender, string $name): string
     {
-        return $gender === 'male'
-            ? 'avatars/defaults/male.jpg'
-            : 'avatars/defaults/female.jpg';
+        // Using UI Avatars as placeholder (no need for local files)
+        $backgroundColor = $gender === 'male' ? '0D8F81' : 'f39c12';
+        return 'https://ui-avatars.com/api/?background=' . $backgroundColor . '&color=fff&name=' . urlencode($name);
     }
 
     public function index()

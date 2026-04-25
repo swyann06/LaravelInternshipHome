@@ -1,43 +1,50 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
-</head>
-<body>
+@extends('layouts.app')
 
-<h2>Register</h2>
+@section('title', 'Register')
 
-
-
-@if ($errors->any())
-    <div style="color: red; margin-bottom: 1em;">
-        <ul>
-            @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-@endif
-
-
-<form method="POST" action="{{ route('register') }}">
-    @csrf
-
-    <input type="radio" name="gender" id="female" value="female">
-    <label for="female">female</label>
-    <input type="radio" name="gender" id="male" value="male">
-    <label for="male">male</label>
-
-
-
-    <input type="text" name="name" placeholder="Name" required>
-    <input type="email" name="email" placeholder="Email" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <input type="password" name="password_confirmation" placeholder="Confirm Password" required>
-    <button type="submit">Register</button>
-</form>
-
-</body>
-</html>
+@section('content')
+<div style="max-width: 500px; margin: 50px auto;">
+    <h1>Register</h1>
+    
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+        
+        <div class="form-group">
+            <label>Gender:</label><br>
+            <label style="margin-right: 15px;">
+                <input type="radio" name="gender" value="female" {{ old('gender') == 'female' ? 'checked' : '' }}> Female
+            </label>
+            <label>
+                <input type="radio" name="gender" value="male" {{ old('gender') == 'male' ? 'checked' : '' }}> Male
+            </label>
+        </div>
+        
+        <div class="form-group">
+            <label>Name:</label>
+            <input type="text" name="name" value="{{ old('name') }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ old('email') }}" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" name="password" required>
+            <small>Min 8 characters with letters, numbers, and symbols</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Confirm Password:</label>
+            <input type="password" name="password_confirmation" required>
+        </div>
+        
+        <button type="submit">Register</button>
+    </form>
+    
+    <p style="margin-top: 20px; text-align: center;">
+        Already have an account? <a href="{{ route('login.form') }}">Login here</a>
+    </p>
+</div>
+@endsection

@@ -20,31 +20,31 @@ class User extends Authenticatable
 
     public function role()
     {
-    return $this->belongsTo(Role::class);
+        return $this->belongsTo(Role::class);
     }
 
     public function posts()
-{
-    return $this->hasMany(Post::class);
-}
+    {
+        return $this->hasMany(Post::class);
+    }
 
     public function isSuperAdmin(): bool
-{
-    return $this->role?->name === 'superadmin';
-}
+    {
+        return $this->role?->name === 'superadmin';
+    }
 
-public function isAdmin(): bool
-{
-    return $this->role?->name === 'admin';
-}
+    public function isAdmin(): bool
+    {
+        return $this->role?->name === 'admin';
+    }
 
-public function isUser(): bool
-{
-    return $this->role?->name === 'user';
-}
+    public function isUser(): bool
+    {
+        return $this->role?->name === 'user';
+    }
 
-public function isBlocked(): bool
-{
-    return !$this->status;
-}
+    public function isBlocked(): bool
+    {
+        return !$this->status;
+    }
 }

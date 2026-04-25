@@ -15,26 +15,26 @@ class PostController extends Controller
 
     public function index()
     {
-        $posts = Post::with('images')->latest()->get();
+        $posts = Post::with('images', 'user')->latest()->get();
         return view('posts.index', compact('posts'));
     }
 
     public function store(StorePostRequest $request)
-{
-    $post = auth()->user()->posts()->create([
-        'content' => $request->input('content') ?? null,
-    ]);
+    {
+        $post = auth()->user()->posts()->create([
+            'content' => $request->input('content'),
+        ]);
 
-    if ($request->hasFile('images')) {
-        foreach (array_slice($request->file('images'), 0, 10) as $file) {
-            $post->images()->create([
-                'url' => $file->store('posts', 'public'),
-            ]);
+        if ($request->hasFile('images')) {
+            foreach (array_slice($request->file('images'), 0, 10) as $file) {
+                $post->images()->create([
+                    'url' => $file->store('posts', 'public'),
+                ]);
+            }
         }
-    }
 
-    return redirect()->back()->with('success', 'Post created successfully!');
-}
+        return redirect()->back()->with('success', 'Post created successfully!');
+    }
 
     public function edit(Post $post)
     {
@@ -43,25 +43,29 @@ class PostController extends Controller
     }
 
     public function update(StorePostRequest $request, Post $post)
-{
-    $this->authorize('update', $post);
+    {
+        $this->authorize('update', $post);
+        
+        // Fix: Update content
+        $post->update([
+            'content' => $request->input('content'),
+        ]);
 
-    if ($request->hasFile('images')) {
+        if ($request->hasFile('images')) {
+            foreach ($post->images as $image) {
+                Storage::disk('public')->delete($image->url);
+                $image->delete();
+            }
 
-        foreach ($post->images as $image) {
-            Storage::disk('public')->delete($image->url);
-            $image->delete();
+            foreach ($request->file('images') as $file) {
+                $post->images()->create([
+                    'url' => $file->store('posts', 'public'),
+                ]);
+            }
         }
 
-        foreach ($request->file('images') as $file) {
-            $post->images()->create([
-                'url' => $file->store('posts', 'public'),
-            ]);
-        }
+        return redirect()->route('posts.index')->with('success', 'Updated successfully');
     }
-
-    return redirect()->route('posts.index')->with('success', 'Updated successfully');
-}
 
     public function destroy(Post $post)
     {

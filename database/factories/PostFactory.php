@@ -13,6 +13,7 @@ class PostFactory extends Factory
     {
         return [
             'user_id' => 1,
+            'content' => $this->faker->paragraph(rand(1, 3)), 
         ];
     }
 }
